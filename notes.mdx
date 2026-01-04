@@ -4,6 +4,9 @@ INDEX:
 3. employee
 4. category
 5. student
+6. customer
+7. myname
+8. common
 
 1. npm i -g @nestjs/cli ->one time global installation
 2. nest new <project-name> -> create a new nestjs project
@@ -476,3 +479,12 @@ transform(value: string) {
 - Result: `"john doe"` becomes `"JOHN DOE"` before your method receives it
 
 Pipes are middleware for your data — they process it before you use it.
+
+
+
+GUARDS:
+- guards are classes that implement logic to decide whether a req is allowed or not.
+- They implement the CanActivate interface and run before the route handler.
+- mostly use for authentication and authorization.
+
+nest g guard guards/auth
