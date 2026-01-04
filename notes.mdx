@@ -524,3 +524,12 @@ Guard:
 
 
 *** study consumer.apply().() in the app.module.ts and Life Cycle Hooks in Nest JS | onModuleInit & onAppShutdown
+
+
+
+for environment variables, run following installation command:
+npm i @nestjs/config
+
+ConfigModule.forRoot({
+    isGlobal: true,}) -> makes the config module available globally to all modules in the application in app.module file.
+    -> this is used to load environment variables from the .env file.
