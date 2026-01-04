@@ -3,3 +3,155 @@
 3. cd <project-name> -> navigate to the project directory
 4. i selected npm as the package manager,so run "npm run start:devc" to start the development server
 5. now to create a new controller, run "nest g controller <controller-name>"
+6. now to create a new service, run "nest g service <service-name>"
+7. service is used to write the business logic of the application,they always will have @Injectable() decorator to make it usable/Injectable in the controller
+
+dependency injection from service to controller
+1. we can inject the service into the controller using the constructor
+## Constructor explanation
+**Line 6:**
+```typescript
+constructor(private readonly productService: ProductService){}
+```
+
+### What it does
+This uses NestJS dependency injection (DI) to provide `ProductService` to the controller.
+
+### Syntax breakdown
+
+1. `constructor(...)`
+   - Runs when the controller is created.
+
+2. `private readonly productService`
+   - `private`: Only accessible inside this class.
+   - `readonly`: Cannot be reassigned after initialization.
+   - `productService`: The property name.
+
+3. `: ProductService`
+   - Type annotation: must be a `ProductService` instance.
+
+### TypeScript shorthand
+This is shorthand for:
+```typescript
+export class ProductController {
+    private readonly productService: ProductService;
+    
+    constructor(productService: ProductService) {
+        this.productService = productService;
+    }
+}
+```
+
+### Why NestJS uses this pattern
+- Dependency injection: NestJS creates and provides the service instance.
+- Testability: Easy to mock the service in tests.
+- Loose coupling: The controller depends on the interface, not the implementation.
+- Automatic wiring: NestJS resolves dependencies when the controller is created.
+
+### How it works
+1. NestJS sees `ProductService` in the constructor.
+2. It checks if `ProductService` is provided in the module.
+3. It creates or reuses an instance.
+4. It passes that instance to the constructor.
+5. The controller can use `this.productService` in its methods.
+
+### In your code
+- Line 9: `this.productService.getAllProducts()` uses the injected service.
+- Line 15: `this.productService.getProductById(...)` uses it again.
+
+### 1. "This class" = ProductController
+
+When I said "Only accessible inside this class", I meant the ProductController class (the file with the constructor).
+
+```typescript
+export class ProductController {  // ← THIS is "this class"
+    constructor(private readonly productService: ProductService){}
+    // productService can only be used inside ProductController
+}
+```
+
+So `productService` is a property of ProductController, not ProductService.
+
+---
+
+### 2. What is `productService`?
+
+`productService` is an instance (object) of the `ProductService` class.
+
+Think of it like this:
+- `ProductService` = the blueprint/class
+- `productService` = an actual object created from that blueprint
+
+It's like:
+- `Car` = the class/blueprint
+- `myCar` = an actual car object
+
+---
+
+### 3. Why use the constructor?
+
+The constructor receives the `ProductService` instance that NestJS creates and provides.
+
+Here's what happens behind the scenes:
+
+```typescript
+// Step 1: NestJS creates an instance of ProductService
+const serviceInstance = new ProductService();
+// This creates: { products: [...], getAllProducts: function, getProductById: function }
+
+// Step 2: NestJS creates ProductController and passes the service
+const controller = new ProductController(serviceInstance);
+// Now controller.productService = serviceInstance
+
+// Step 3: When you call controller.getProducts(), it uses:
+controller.productService.getAllProducts()  // ← Uses the injected instance
+```
+
+---
+
+### 4. Visual breakdown
+
+```typescript
+export class ProductController {
+    // This line does THREE things at once:
+    constructor(private readonly productService: ProductService){}
+    
+    // 1. Declares a property: productService
+    // 2. Makes it private (only usable in ProductController)
+    // 3. Makes it readonly (can't change it later)
+    // 4. Receives the ProductService instance from NestJS
+}
+```
+
+Equivalent to writing:
+```typescript
+export class ProductController {
+    private readonly productService: ProductService;  // Property declaration
+    
+    constructor(productService: ProductService) {     // Constructor receives it
+        this.productService = productService;         // Assigns it
+    }
+}
+```
+
+---
+
+### 5. The flow
+
+1. NestJS sees `ProductService` in the constructor.
+2. NestJS creates an instance: `new ProductService()` → gives you an object with `products`, `getAllProducts()`, `getProductById()`.
+3. NestJS passes that instance to the constructor.
+4. The constructor stores it in `this.productService`.
+5. You can use `this.productService.getAllProducts()` anywhere in ProductController.
+
+---
+
+### Summary
+
+- "This class" = ProductController (where the constructor lives)
+- `productService` = an instance/object of the ProductService class
+- Constructor = receives the instance from NestJS and stores it
+- `private` = only ProductController can use `productService`
+- `readonly` = you can't reassign `productService` later
+
+When you write `this.productService.getAllProducts()`, you're calling a method on the injected ProductService instance.
