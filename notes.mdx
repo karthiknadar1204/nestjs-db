@@ -13,6 +13,7 @@ INDEX:
 6. now to create a new service, run "nest g service <service-name>"
 7. service is used to write the business logic of the application,they always will have @Injectable() decorator to make it usable/Injectable in the controller
 8. now to create a new module, run "nest g module <module-name>"
+
 dependency injection from service to controller
 1. we can inject the service into the controller using the constructor
 ## Constructor explanation
@@ -170,3 +171,168 @@ It is a mechanism where the framework automatically provides the required depend
 - makes the codes reusable and readable.
 - promotes loose coupling.
 - 
+
+
+DATA TRANSFER OBJECT(DTO):
+-  an object carries data between layers(from client to backend)
+- it is used to define the shape of the incoming data.
+- ensures only required data is passed(security+validation)
+
+INTERFACE:
+- define the structure(type) of an object.
+- help write cleaner and type-safe code.
+- used for both request(DTO's) and esponse objects.
+
+
+## validation pipe:
+```typescript
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true
+  }))
+  ```
+  - whitelist: true -> removes extra properties that are not in the DTO
+  - forbidNonWhitelisted: true -> returns a 400 error if extra properties are sent
+## Explanation of ValidationPipe
+
+**Lines 6-9:**
+```typescript
+app.useGlobalPipes(new ValidationPipe({
+  whitelist: true,
+  forbidNonWhitelisted: true
+}))
+```
+
+### What is ValidationPipe?
+`ValidationPipe` automatically validates incoming request data using your DTOs (Data Transfer Objects).
+
+### What does `useGlobalPipes` do?
+It applies this validation to all routes in your app, so you don't need to add it to each controller.
+
+---
+
+### The two options explained
+
+#### 1. `whitelist: true`
+- Strips properties that are not in your DTO.
+- Extra properties are removed; only DTO properties remain.
+
+Example with your `CreateCustomerDto`:
+```typescript
+// Your DTO only has: name, age
+export class CreateCustomerDto {
+  name: string;
+  age: number;
+}
+```
+
+Request sent:
+```json
+{
+  "name": "John",
+  "age": 25,
+  "hackerField": "malicious data",  // ← Not in DTO
+  "email": "test@test.com"          // ← Not in DTO
+}
+```
+
+With `whitelist: true`, the controller receives:
+```json
+{
+  "name": "John",
+  "age": 25
+}
+```
+The extra fields are removed.
+
+---
+
+#### 2. `forbidNonWhitelisted: true`
+- Returns a 400 error if extra properties are sent.
+- Stops the request instead of silently removing fields.
+
+Same request:
+```json
+{
+  "name": "John",
+  "age": 25,
+  "hackerField": "malicious data"  // ← Extra field
+}
+```
+
+Response:
+```json
+{
+  "statusCode": 400,
+  "message": [
+    "property hackerField should not exist"
+  ],
+  "error": "Bad Request"
+}
+```
+
+---
+
+### Why use both together?
+- `whitelist: true` removes extra fields.
+- `forbidNonWhitelisted: true` rejects requests with extra fields.
+
+This enforces strict validation: only the exact properties in your DTO are allowed.
+
+---
+
+### Real-world example
+
+Your `CreateCustomerDto`:
+```typescript
+export class CreateCustomerDto {
+  @IsString()
+  name: string;
+  
+  @IsInt()
+  age: number;
+}
+```
+
+Valid request:
+```json
+{
+  "name": "John",
+  "age": 25
+}
+```
+Result: Accepted.
+
+Invalid request (extra field):
+```json
+{
+  "name": "John",
+  "age": 25,
+  "email": "john@example.com"  // ← Not in DTO!
+}
+```
+Result: 400 error — "property email should not exist"
+
+Invalid request (wrong type):
+```json
+{
+  "name": "John",
+  "age": "twenty-five"  // ← Should be number!
+}
+```
+Result: 400 error — "age must be an integer number"
+
+---
+
+### Summary
+- `ValidationPipe`: Validates request data automatically.
+- `whitelist: true`: Removes properties not in your DTO.
+- `forbidNonWhitelisted: true`: Rejects requests with extra properties.
+- Together: Enforces strict validation across your app.
+
+This helps prevent:
+- Security issues (unexpected data)
+- Bugs (typos in field names)
+- Data corruption (wrong data types)
+
+Your API only accepts the exact data structure you define in your DTOs.
