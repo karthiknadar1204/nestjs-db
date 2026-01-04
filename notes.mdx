@@ -336,3 +336,143 @@ This helps prevent:
 - Data corruption (wrong data types)
 
 Your API only accepts the exact data structure you define in your DTOs.
+
+
+
+- pipes are used to transform or validate the data in the request body,query params,headers,etc.
+- a pipe runs before the data hits the route handler(controller method).
+- you can apply pipes at method level,controller level, or globally at the app level.
+
+for creating a new pipe, run "nest g pipe <pipe-name>"
+
+## What are Pipes?
+
+Pipes transform or validate data before it reaches your controller method. They run between the request and your handler.
+
+Think of pipes as filters/transformers:
+- Transform data (e.g., convert to uppercase, parse numbers)
+- Validate data (e.g., check if email is valid)
+- Provide default values
+
+---
+
+## How Pipes Work in Your Code
+
+### Your `myname.controller.ts`:
+
+```typescript
+@Post('custom')
+transformName(@Body('name', new UppercasePipe()) name: string){
+    return {message: `Received name: ${name}`}
+}
+```
+
+Line 8 breakdown:
+- `@Body('name', ...)` — extracts the `name` field from the request body
+- `new UppercasePipe()` — creates a pipe instance to transform the value
+- `name: string` — the transformed value received by the method
+
+---
+
+## Your Custom Pipe: `UppercasePipe`
+
+```typescript
+export class UppercasePipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    if(typeof value === 'string') {
+      return value.toUpperCase();
+    }
+    return value;
+  }
+}
+```
+
+What it does:
+1. Implements `PipeTransform` (required interface)
+2. `transform()` receives the input value
+3. If it's a string, converts it to uppercase
+4. Returns the transformed value
+
+---
+
+## How It Works in Practice
+
+### Example Request:
+```json
+POST /myname/custom
+{
+  "name": "john doe"
+}
+```
+
+### Flow:
+1. Request arrives with `"name": "john doe"`
+2. `@Body('name', new UppercasePipe())` extracts `"john doe"`
+3. `UppercasePipe.transform()` converts it to `"JOHN DOE"`
+4. Your method receives `name = "JOHN DOE"`
+5. Response: `{message: "Received name: JOHN DOE"}`
+
+---
+
+## Visual Flow Diagram
+
+```
+Request: {"name": "john doe"}
+    ↓
+@Body('name', new UppercasePipe())
+    ↓
+UppercasePipe.transform("john doe")
+    ↓
+Returns: "JOHN DOE"
+    ↓
+transformName(name: string) receives "JOHN DOE"
+    ↓
+Response: {"message": "Received name: JOHN DOE"}
+```
+
+---
+
+## Why Use Pipes Here?
+
+- Data normalization: ensures consistent casing
+- Separation of concerns: transformation logic is separate from business logic
+- Reusability: can be used in other controllers
+- Clean code: controller stays focused on handling requests
+
+---
+
+## Other Common Pipe Examples
+
+### 1. ParseIntPipe (Built-in)
+```typescript
+@Get(':id')
+getUser(@Param('id', ParseIntPipe) id: number) {
+  // Converts string "123" → number 123
+}
+```
+
+### 2. ValidationPipe (Built-in)
+```typescript
+@Post()
+createUser(@Body(ValidationPipe) dto: CreateUserDto) {
+  // Validates data against DTO rules
+}
+```
+
+### 3. Custom ParseNumberPipe
+```typescript
+transform(value: string) {
+  return Number(value); // "42" → 42
+}
+```
+
+---
+
+## Summary
+
+- Pipes transform or validate data before it reaches your controller
+- In your code: `UppercasePipe` converts the name to uppercase
+- Usage: `@Body('name', new UppercasePipe())` applies the pipe to the `name` field
+- Result: `"john doe"` becomes `"JOHN DOE"` before your method receives it
+
+Pipes are middleware for your data — they process it before you use it.
