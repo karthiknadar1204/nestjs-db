@@ -1,3 +1,10 @@
+INDEX:
+1. user
+2. product
+3. employee
+4. category
+5. student
+
 1. npm i -g @nestjs/cli ->one time global installation
 2. nest new <project-name> -> create a new nestjs project
 3. cd <project-name> -> navigate to the project directory
@@ -155,3 +162,11 @@ export class ProductController {
 - `readonly` = you can't reassign `productService` later
 
 When you write `this.productService.getAllProducts()`, you're calling a method on the injected ProductService instance.
+
+
+
+DEPENDENCY INJECTION:
+It is a mechanism where the framework automatically provides the required dependencies into the without creating them manually.
+- makes the codes reusable and readable.
+- promotes loose coupling.
+- 
