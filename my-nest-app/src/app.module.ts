@@ -17,12 +17,15 @@ import { DatabaseService } from './database/database.service';
 import { ConfigModule } from '@nestjs/config';
 import { EvService } from './ev/ev.service';
 import { EvController } from './ev/ev.controller';
+import { StudentsService } from './students/students.service';
+import { StudentsController } from './students/students.controller';
+import { StudentsModule } from './students/students.module';
 
 @Module({
   imports: [EmployeeModule, CategoryModule, StudentModule, CustomerModule,ConfigModule.forRoot({
-    isGlobal: true,})],
-  controllers: [AppController, UserController, ProductController, MynameController, UserRolesController, ExceptionController, DatabaseController, EvController],
-  providers: [AppService, ProductService, DatabaseService, EvService],
+    isGlobal: true,}), StudentsModule],
+  controllers: [AppController, UserController, ProductController, MynameController, UserRolesController, ExceptionController, DatabaseController, EvController, StudentsController],
+  providers: [AppService, ProductService, DatabaseService, EvService, StudentsService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
